@@ -1,0 +1,60 @@
+    try {
+        db.beginTransaction()
+        const {
+            customer_id,customer_address_id,payement_methode_id,comment,
+        } = req.body;
+        var message={}
+        if(isEmptyOrNUll(customer_id)){message.customer_id="Customer id Require"}
+        if (isEmptyOrNUll(customer_address_id)){message.customer_address_id="Customer Address id Require"}
+        if (isEmptyOrNUll(payement_methode_id)){message.payement_methode_id="Payment method Require"}
+        if (Object.keys(message).length > 0){
+            res.json({
+                message:message,
+                error:true
+            })
+        return 0
+        }
+        //find customer address Info By Address id from client site
+        var address= await  db.query("SELECT * FROM `customer_address` WHERE  customer_address_id=?",[customer_address_id])
+        if (address?.length > 0) {
+            const {firstname, lastname, tel, address_des} = address[0]
+            //find total order => need get cartInfo by customer
+            const product = await db.query("SELECT c.*, p.price FROM cart c  INNER JOIN product p ON (c.product_id = p.product_id)  WHERE c.customer_id = ?", [customer_id]);
+            if (product.length > 0) {
+                // find total amont base from cart by customer
+                var order_total = 0;
+                product.map((item, index) => {
+                    order_total += (item.quantity * item.price)
+                })
+                //
+                var order_status_id = 1
+                var inv_no = await generateInvoiceNo();
+                var sqlOrder = "INSERT INTO `order`" +
+                    " (customer_id, payement_methode_id, order_status_id , invoice_no, comment, order_total, firstname, lastname, telelphone, address_des) VALUES " +
+                    " (?,?,?,?,?,?,?,?,?,?)";
+                var orderParams = [customer_id, payement_methode_id, order_status_id, inv_no, comment, order_total, firstname, lastname, tel, address_des]
+                const order = await db.query(sqlOrder, orderParams)
+                product.map(async (item, index) => {
+                    var sqlOrderDetail = "INSERT INTO `order_detail` (order_id,product_id,quantity,price) VALUES (?,?,?,?)"
+                    var sqlOrderDetailParam = [order.insertId, item.product_id, item.quantity, item.price]
+                    const data = await db.query(sqlOrderDetail, sqlOrderDetailParam)
+                    // cut stock
+                    var sqlProduct = "UPDATE product SET quantity=(quantity-?)"
+                    var updateProduct = await db.query(sqlProduct, [item.quantity])
+                })
+                await db.query("DELETE FROM cart WHERE customer_id = ?", [customer_id])
+                db.commit();
+                res.json({
+                    message: "Your order has been successfully!",
+                    data: order
+                })
+            }
+
+        }
+    }catch(e){
+        db.rollback();
+        res.json({
+            message:e,
+            error:true
+        })
+    }

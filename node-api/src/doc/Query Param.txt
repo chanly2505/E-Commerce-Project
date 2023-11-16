@@ -1,0 +1,107 @@
+const express = require("express")
+// const app = express()
+// app.use(express.json());
+// const cat = require("./src/route/category.route")
+// const product = require("./src/route/product.route")
+ 
+// //app.get(path, handler)
+// app.get ('/api/category/:id' , (req , res )  => {
+//     //var id =req.query.id  //Query Parameter
+//     var id =req.params.id //params parameter
+//     res.json({
+//         // data : req.body
+//         data:cat.category(id),
+//         productData:product.product,
+//         param_patameter: req.params
+//     })
+// })
+
+// // require and defind port
+// app.listen(8081 , () => {
+//     console.log("HTTP Has been request in port 8081")
+// })
+
+
+//app.get(path, handler)
+app.get ('/api/category/:id' , (req , res )  => {
+    //var id =req.query.id  //Query Parameter
+    var id =req.params.id //params parameter
+    res.json({
+        // data : req.body
+        data:cat.category(id),
+        productData:product.product,
+        param_patameter: req.params
+    })
+})
+
+
+
+
+
+
+// const category = (app) => {
+//     app.get("/catregory" , (req, res)=> {
+//         res.send("Category List")
+//     })
+//     app.get("/catregory/:id" , (req, res)=> {
+//         res.send("Category List by Id")
+//     })
+//     app.post("/catregory" , (req, res)=> {
+//         res.send("Create Category")
+//     })
+//     app.put("/catregory" , (req, res)=> {
+//         res.send("Update Category")
+//     })
+//     app.delete("/catregory" , (req, res)=> {
+//         res.send("Deleted Category")
+//     })
+// }// const category = (app) => {
+//     app.get("/catregory" , (req, res)=> {
+//         res.send("Category List")
+//     })
+//     app.get("/catregory/:id" , (req, res)=> {
+//         res.send("Category List by Id")
+//     })
+//     app.post("/catregory" , (req, res)=> {
+//         res.send("Create Category")
+//     })
+//     app.put("/catregory" , (req, res)=> {
+//         res.send("Update Category")
+//     })
+//     app.delete("/catregory" , (req, res)=> {
+//         res.send("Deleted Category")
+//     })
+// }
+
+
+
+
+// var data = [
+//     {
+//         id:101,
+//         name:"Chan Ly"
+//     },
+//     {
+//         id:2,
+//         name:"Ly Chan"
+//     }
+// ]
+// const category = (id) => {
+//    var dataTmp =[];
+//    for (var i = 0 ; i< data.length ;i++){
+//     if(data[i].id == id){
+//         dataTmp.push(data[i])
+//     }
+//    }
+//     return dataTmp;
+// }
+// module.exports = {
+//     category
+// }
+    // var spljoin = "SELECT * FROM wishlist wl "
+    // spljoin += "INNER JOIN product p ON (p.product_id = wl.product_id)"
+    // spljoin += "WHERE wl.customer_id= ?"
+        // var sql ="SELECT *FROM cart WHERE customer_id= ?"
+        // var sql = "SELECT c.cart_id,c.quantity,p.* FROM cart c"
+        // sql+= "INNER JOIN product p ON (c.product_id p = p.product_id)"
+        // sql+= "WHERE c.customer_id= ? "
