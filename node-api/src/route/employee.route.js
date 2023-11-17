@@ -10,6 +10,7 @@ const employee =(app,base_route)=> {
     app.put("/api/employee", employeeCtrl.update)
     app.delete("/api/employee/:id",employeeCtrl.remove)
     app.post(`${base_route}/set_password`, employeeCtrl.setPassword)
+    app.post(`${base_route}/refresh_token`, employeeCtrl.refreshToken)
     app.post(`${base_route}/employee_login`, employeeCtrl.login)
 }
 module.exports=employee;   

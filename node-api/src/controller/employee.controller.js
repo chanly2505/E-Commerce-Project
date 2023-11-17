@@ -142,7 +142,7 @@ const login = async (req,res) =>{
                 user:user,
                 permission:permission,
             }
-            var access_token = jwt.sign({data:{...obj}},TOKEN_KEY,{expiresIn:"60s"})
+            var access_token = jwt.sign({data:{...obj}},TOKEN_KEY,{expiresIn:"60h"})
             var refresh_token = jwt.sign({data:{...obj}},REFRESH_KEY)
             res.json({
                 ...obj,
@@ -164,10 +164,41 @@ const login = async (req,res) =>{
 }
 
 const refreshToken = async  (req,res) => {
-
+        /// Check and verify refresh_token from client
+    var {refresh_Key} = req.body
+    if (isEmptyOrNUll(refresh_Key)){
+        res.status(401).send({
+            message:"Unauthorized"
+        })
+    }else {
+        jwt.verify(refresh_Key, REFRESH_KEY ,async (error, resulf)=>{
+            if (error){
+                res.status(401).send({
+                    message:"Unauthorized",
+                    error:error
+                })
+            }else {
+                // get access new token
+                var username=resulf.data.user.tel
+                var user = await db.query("SELECT * FROM employee WHERE tel=?",[username]);
+                var user = user[0]
+                delete user.password; // delete colums password from object user'
+                var permission = await getPermissionUser(user.employee_id)
+                var obj = {
+                    user:user,
+                    permission:permission,
+                }
+                var access_token = jwt.sign({data:{...obj}},TOKEN_KEY,{expiresIn:"60h"})
+                var refresh_token = jwt.sign({data:{...obj}},REFRESH_KEY)
+                res.json({
+                    ...obj,
+                    access_token:access_token,
+                    refresh_token:refresh_token,
+                })
+            }
+        })
+    }
 }
-
-
 
 const update = (req,res) => {
     const{
@@ -242,5 +273,6 @@ module.exports={
     update,
     remove,
     login,
-    setPassword
+    setPassword,
+    refreshToken
 }

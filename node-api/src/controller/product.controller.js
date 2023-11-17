@@ -2,9 +2,15 @@ const db = require("../util/db")
 const {isEmptyOrNUll} = require("../service/service");
 const productgetList =async (req , res)=>{
     var sql = "SELECT * FROM  product"
+    var sqlCategory= "SELECT * FROM category "
+    // var sqlBrand ="SELECT * FROM brand"
     var data =await db.query(sql)
+    var category = await  db.query(sqlCategory)
+    // var brand = await db.query(sqlBrand)
     res.json({
-        ListProduct:data
+        list:data,
+        listCategory:category,
+        // brand:brand
     })
 }
 const productgetOne =async (req , res) => {
