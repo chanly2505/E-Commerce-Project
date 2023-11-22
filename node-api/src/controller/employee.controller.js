@@ -142,7 +142,7 @@ const login = async (req,res) =>{
                 user:user,
                 permission:permission,
             }
-            var access_token = jwt.sign({data:{...obj}},TOKEN_KEY,{expiresIn:"60h"})
+            var access_token = jwt.sign({data:{...obj}},TOKEN_KEY,{expiresIn:"30h"})
             var refresh_token = jwt.sign({data:{...obj}},REFRESH_KEY)
             res.json({
                 ...obj,
@@ -188,7 +188,7 @@ const refreshToken = async  (req,res) => {
                     user:user,
                     permission:permission,
                 }
-                var access_token = jwt.sign({data:{...obj}},TOKEN_KEY,{expiresIn:"60h"})
+                var access_token = jwt.sign({data:{...obj}},TOKEN_KEY,{expiresIn:"30s"})
                 var refresh_token = jwt.sign({data:{...obj}},REFRESH_KEY)
                 res.json({
                     ...obj,

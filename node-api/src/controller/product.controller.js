@@ -1,7 +1,8 @@
 const db = require("../util/db")
 const {isEmptyOrNUll} = require("../service/service");
 const productgetList =async (req , res)=>{
-    var sql = "SELECT * FROM  product"
+    var sql = "SELECT p.*, c.name as category_name FROM product p "+
+    "INNER JOIN category c ON (p.category_id = c.category_id) "
     var sqlCategory= "SELECT * FROM category "
     // var sqlBrand ="SELECT * FROM brand"
     var data =await db.query(sql)
@@ -28,10 +29,13 @@ const productcreate =async (req , res) => {
         name,
         quantity,
         price,
-        image,
         description,
         is_active,
     }=req.body
+    var filename = null
+    if (req.file) {
+        filename= req.file.filename
+    }
     var message={}
     if(isEmptyOrNUll(category_id)){message.category_id="Require Category Id"}
     if(isEmptyOrNUll(barcode)){message.barcode="Require barcode"}
@@ -45,7 +49,7 @@ const productcreate =async (req , res) => {
         })
     }
     var sql = "INSERT INTO product (category_id, barcode,name,quantity,price,image,description,is_active) VALUES (?,?,?,?,?,?,?,?)"
-    var param= [category_id,barcode,name,quantity,price,image,description,is_active]
+    var param= [category_id,barcode,name,quantity,price,filename,description,is_active]
     var data = await  db.query(sql,param)
     res.json({
         message:"Product create success",
@@ -56,36 +60,38 @@ const productupdate =async (req , res) =>{
     var {
         product_id,
         category_id,
-        barcode	,
+        barcode,
         name,
         quantity,
         price,
         image,
-        description,
-        is_active,
-    }=req.body
-    var message={}
-    if ((isEmptyOrNUll(product_id))){message.product_id="Require Product Id"}
-    if(isEmptyOrNUll(category_id)){message.category_id="Require Category Id"}
-    if(isEmptyOrNUll(barcode)){message.barcode="Require barcode"}
-    if(isEmptyOrNUll(name)){message.name="Require name"}
-    if(isEmptyOrNUll(quantity)){message.quantity="Require Category Id"}
-    if(isEmptyOrNUll(price)){message.price="Require Category Id"}
-    if ((Object.keys(message).length >0)){
+        description
+    } = req.body;
+
+    var message = {}
+    if (isEmptyOrNUll(product_id)) { message.product_id = "product_id required!" }
+    if (isEmptyOrNUll(category_id)) { message.category_id = "category_id required!" }
+    if (isEmptyOrNUll(barcode)) { message.barcode = "barcode required!" }
+    if (isEmptyOrNUll(name)) { message.name = "name required!" }
+    if (isEmptyOrNUll(quantity)) { message.quantity = "quantity required!" }
+    if (isEmptyOrNUll(price)) { message.price = "price required!" }
+    if (Object.keys(message).length > 0) {
         res.json({
-            error:true,
-            message:message
+            error: true,
+            message: message
         })
+        return false;
     }
     var sql = "UPDATE product SET category_id=?, barcode=?, name=?, quantity=?, price=?, image=?, description=? WHERE product_id = ?"
-    var param= [category_id,barcode,name,quantity,price,image,description,is_active,product_id]
-    var data = await  db.query(sql,param)
+    var param = [category_id, barcode, name, quantity, price, image, description, product_id]
+    var data = db.query(sql, param)
     res.json({
-        message:"Product create success",
-        data:data
+        message: "Updated product",
+        data: data
     })
-
 }
+
+
 const productdeleted = async (req , res) => {
     var {id} = req.body
     var sql ="DELETE FROM product WHERE product_id = ?"
