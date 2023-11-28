@@ -1,18 +1,55 @@
 const db = require("../util/db")
 const {isEmptyOrNUll} = require("../service/service");
+
+const getParam = (value) => {
+    if(value == "" || value == "null" || value == "undefined"){
+        return null
+    }
+    return value
+}
 const productgetList =async (req , res)=>{
-    var sql = "SELECT p.*, c.name as category_name FROM product p "+
-    "INNER JOIN category c ON (p.category_id = c.category_id) "
-    var sqlCategory= "SELECT * FROM category "
-    // var sqlBrand ="SELECT * FROM brand"
-    var data =await db.query(sql)
+try{
+    const {page,categoryId,txtSearch,productStatus} = req.query
+    var param =[getParam(categoryId)]
+    var limiteItem=5
+    var offset = (page-1) * limiteItem
+    var select = "SELECT p.*,c.name as category_name FROM product p " +
+    "INNER JOIN category c ON (p.category_id = c.category_id)";
+    var where = " WHERE p.category_id = IFNULL(?,p.category_id) "
+    if(!isEmptyOrNUll(categoryId)){
+        where += " AND p.category_id =?"
+        param.push(categoryId)
+    }
+    if(!isEmptyOrNUll(txtSearch)) {
+        where += " AND p.barcode =?" 
+        param.push(txtSearch)
+        // param.push("%"+txtSearch+"%")
+    }
+    if(!isEmptyOrNUll(productStatus)) {
+        where += (where !== "" ? " AND" : "") + " p.is_active =?"
+        param.push(productStatus)
+    }
+    // if (where !== "") {
+    //     where = " WHERE" + where;
+    // }
+    var sql = select + where
+    var data =await db.query(sql,param)
+
+    var sqlCategory ="SELECT * FROM category"
     var category = await  db.query(sqlCategory)
-    // var brand = await db.query(sqlBrand)
+
     res.json({
         list:data,
         listCategory:category,
-        // brand:brand
+        queryData : req.query,
     })
+}catch (e) {
+        console.log(e)
+        res.status(500).send({
+            message: 'Internal Error!',
+            error: e
+        });
+    }
 }
 const productgetOne =async (req , res) => {
     var produtcId= req.params.id
@@ -65,7 +102,8 @@ const productupdate =async (req , res) =>{
         quantity,
         price,
         image,
-        description
+        description,
+        is_active,
     } = req.body;
 
     var message = {}
@@ -82,8 +120,8 @@ const productupdate =async (req , res) =>{
         })
         return false;
     }
-    var sql = "UPDATE product SET category_id=?, barcode=?, name=?, quantity=?, price=?, image=?, description=? WHERE product_id = ?"
-    var param = [category_id, barcode, name, quantity, price, image, description, product_id]
+    var sql = "UPDATE product SET category_id=?, barcode=?, name=?, quantity=?, price=?, image=?, description=? , is_active=? WHERE product_id = ?"
+    var param = [category_id, barcode, name, quantity, price, image, description,is_active, product_id]
     var data = db.query(sql, param)
     res.json({
         message: "Updated product",
